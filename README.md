@@ -1,4 +1,8 @@
+
 # Vision
+
+## Overview
+This document provides an overview of different computer vision techniques used for image processing, including their objectives, neural networks used, and real-world applications.
 
 ## Summary of how these techniques are applied in image processing:
 
@@ -10,8 +14,9 @@
 | **Image Generation**    | Create realistic or transformed images      | GANs, VAEs                       | Generative art, deepfakes, text-to-image generation |
 
 ## Examples of Object Detection
-* https://gerardomunoz.github.io/Vision/Hand_Detection.html
-* https://gerardomunoz.github.io/Vision/Hand_Detection_LandMark.html
+Here are a couple of examples of object detection applications:
+* [Hand Detection](https://gerardomunoz.github.io/Vision/Hand_Detection.html) - A demo of detecting hands in real-time.
+* [Hand Detection Landmark](https://gerardomunoz.github.io/Vision/Hand_Detection_LandMark.html) - Example showcasing hand landmark detection for gesture recognition.
 
-## Challenge 
-* https://www.youtube.com/watch?v=sGDJwilP-oo
+## Challenge
+Check out this video on building an object detection: [Object Detection Challenge](https://www.youtube.com/watch?v=sGDJwilP-oo).
