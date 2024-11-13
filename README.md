@@ -39,6 +39,11 @@ Check out this video on building an object detection: [Object Detection Challeng
 
 https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 
+## Object Detection
+https://github.com/GerardoMunoz/Vision/blob/main/GroundingDINO.ipynb
+
+## Image Segmentation
+https://segment-anything.com/
 
 ## Image Generation
 https://github.com/GerardoMunoz/LinearCombinationGrade/blob/master/CalifCombLin_2020_4_09_wea001.ipynb
