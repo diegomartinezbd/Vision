@@ -30,5 +30,5 @@ En el proyecto final debe entrenar una red convolucional para detección de obje
 
 ## Referencias recomendadas
 
-- Páginas oficiales y tutoriaes de **Grounding DINO** y **Segment Anything Model (SAM)**.
+- Páginas oficiales y tutoriales de **Grounding DINO** y **Segment Anything Model (SAM)**.
 - https://github.com/GerardoMunoz/Vision/blob/main/Blanqueamiento_Coralino_Carol_Fernandez.pdf
