@@ -1,3 +1,5 @@
+**Información para 2024/11/20 18:00**: Estimado etudiante, en el siguiente enlace encontrará las actividades para la clase de hoy. No olvide subir al repositorio el trabajo realizado antes de las 10pm.  https://github.com/GerardoMunoz/Vision/blob/main/Generacion_de_etiquetas_y_mascaras.md
+ 
 
 # Vision
 
