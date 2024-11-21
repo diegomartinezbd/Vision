@@ -1,6 +1,3 @@
-**Información para 2024/11/20 18:00**: Estimado etudiante, en el siguiente enlace encontrará las actividades para la clase de hoy. No olvide subir al repositorio el trabajo realizado antes de las 10pm.  https://github.com/GerardoMunoz/Vision/blob/main/Generacion_de_etiquetas_y_mascaras.md
- 
-
 # Vision
 
 ## Overview
@@ -42,8 +39,11 @@ Check out this video on building an object detection: [Object Detection Challeng
 https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 
 ## Object Detection
-https://github.com/GerardoMunoz/Vision/blob/main/GroundingDINO.ipynb
+* https://github.com/GerardoMunoz/Vision/blob/main/GroundingDINO.ipynb
+* https://github.com/GerardoMunoz/Vision/blob/main/Zero_shot_object_detection_with_grounding_dino.ipynb
 
+## Image Segmentation
+* https://github.com/GerardoMunoz/Vision/blob/main/Automatic_mask_generator_example.ipynb
 
 ## Image Generation
-https://github.com/GerardoMunoz/LinearCombinationGrade/blob/master/CalifCombLin_2020_4_09_wea001.ipynb
+* https://github.com/GerardoMunoz/LinearCombinationGrade/blob/master/CalifCombLin_2020_4_09_wea001.ipynb
