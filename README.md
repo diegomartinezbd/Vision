@@ -47,3 +47,12 @@ https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 
 ## Image Generation
 * https://github.com/GerardoMunoz/LinearCombinationGrade/blob/master/CalifCombLin_2020_4_09_wea001.ipynb
+
+## Comparison of Lightweight TensorFlow.js Models for Efficient Image Processing
+| **Model Name**         | **Image Suitability**                    | **Speed for Prediction**        | **Speed for Retraining Last Layers** | **Why Choose It**                                                                                          |
+|-------------------------|------------------------------------------|----------------------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------|
+| **COCO-SSD**           | Best for object detection (e.g., people, objects) | Fast (real-time on most devices) | Moderate                              | Lightweight and optimized for speed.                                                                      |
+| **MobileNet**          | Best for image classification            | Very Fast                        | Fast                                  | Pre-trained on ImageNet; great for classification tasks, lightweight, and fast inference.                 |
+| **YOLO-Tiny**          | Best for simple object detection         | Fast (real-time on mobile)       | Moderate                              | Optimized for smaller devices; good balance between speed and object detection accuracy.                   |
+| **PoseNet** (Optional) | Best for pose estimation and keypoints   | Moderate                         | Slow                                  | Useful for pose estimation; lightweight and well-suited for quick applications like tracking skeletons.    |
+
