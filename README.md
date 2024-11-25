@@ -17,6 +17,7 @@ Here are a couple of examples of object detection applications:
 * [Hand Detection](https://gerardomunoz.github.io/Vision/Hand_Detection.html) - A demo of detecting hands in real-time.
 * [Hand Detection Landmark](https://gerardomunoz.github.io/Vision/Hand_Detection_LandMark.html) - Example showcasing hand landmark detection for gesture recognition.
 
+
 ## Challenge
 Check out this video on building an object detection: [Object Detection Challenge](https://www.youtube.com/watch?v=sGDJwilP-oo).
 
@@ -56,3 +57,4 @@ https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 | **YOLO-Tiny**          | Best for simple object detection         | Fast (real-time on mobile)       | Moderate                              | Optimized for smaller devices; good balance between speed and object detection accuracy.                   |
 | **PoseNet** (Optional) | Best for pose estimation and keypoints   | Moderate                         | Slow                                  | Useful for pose estimation; lightweight and well-suited for quick applications like tracking skeletons.    |
 
+* [MobileNet Detection](https://gerardomunoz.github.io/Vision/simple_MobileNet_ejem.html)
