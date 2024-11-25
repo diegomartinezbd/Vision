@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MobileNet with TensorFlow.js</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    #webcam {
+      border: 2px solid black;
+      width: 320px;
+      height: 240px;
+    }
+  </style>
+</head>
+<body>
+  <h1>MobileNet Image Classification</h1>
+  <video id="webcam" autoplay></video>
+  <p id="prediction">Loading model...</p>
+  <script>
+    // Get references to HTML elements
+    const webcamElement = document.getElementById('webcam');
+    const predictionElement = document.getElementById('prediction');
+
+    // Load the MobileNet model
+    let model;
+    async function loadModel() {
+      predictionElement.innerText = 'Loading MobileNet model...';
+      model = await mobilenet.load();
+      predictionElement.innerText = 'Model loaded! Point the webcam at something.';
+      startWebcam();
+    }
+
+    // Set up the webcam
+    async function startWebcam() {
+      // Request access to the webcam
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false
+      });
+      webcamElement.srcObject = stream;
+
+      // Wait for the video to load
+      webcamElement.addEventListener('loadeddata', () => {
+        predict();
+      });
+    }
+
+    // Perform predictions
+    async function predict() {
+      if (model && webcamElement) {
+        // Classify the current frame from the webcam
+        const predictions = await model.classify(webcamElement);
+
+        // Display the top prediction
+        predictionElement.innerText = `Prediction: ${predictions[0].className} 
+        (Confidence: ${(predictions[0].probability * 100).toFixed(2)}%)`;
+
+        // Repeat the prediction process
+        requestAnimationFrame(predict);
+      }
+    }
+
+    // Start the application
+    loadModel();
+  </script>
+</body>
+</html>
