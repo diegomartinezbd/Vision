@@ -23,21 +23,29 @@ Check out this video on building an object detection: [Object Detection Challeng
 
 ## Image Classification
 
-| Feature                 | **LeNet**                           | **AlexNet**                                  |
-|-------------------------|-------------------------------------|----------------------------------------------|
-| **Year**                | 1989                                | 2012                                         |
-| **Developed By**        | Yann LeCun and team                 | Alex Krizhevsky, Ilya Sutskever, Geoffrey Hinton |
-| **Input Image Size**    | 32x32 grayscale                     | 224x224 RGB                                  |
-| **Number of Parameters**| ~60,000                             | ~60 million                                  |
-| **Layers**              | 2 Conv, 2 Pooling, 2 FC             | 5 Conv, 3 Pooling, 3 FC                      |
-| **Activation Function** | tanh                                | ReLU                                         |
-| **Pooling**             | Average Pooling                     | Max Pooling                                  |
-| **Regularization**      | None                                | Dropout                                      |
-| **Training**            | CPU                                 | GPU                                          |
-| **Dataset**             | MNIST (Handwritten Digits)          | ImageNet (Real-world objects, 1000 classes)  |
-| **Legacy**              | First practical CNN                 | Popularized deep learning, sparked modern AI research |
+# Comparison of LeNet, AlexNet, VGG, ResNet, and MobileNet
 
-https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
+| Feature                  | **LeNet**                          | **AlexNet**                                | **VGG**                                  | **ResNet**                                | **MobileNet**                           |
+|--------------------------|-------------------------------------|--------------------------------------------|------------------------------------------|-------------------------------------------|-----------------------------------------|
+| **Year**                 | 1989                               | 2012                                       | 2014                                     | 2015                                      | 2017                                    |
+| **Developed By**         | Yann LeCun and team                | Alex Krizhevsky, Ilya Sutskever, Geoffrey Hinton | Visual Geometry Group (Oxford)          | Kaiming He and team (Microsoft Research) | Google                                  |
+| **Input Image Size**     | 32x32 grayscale                    | 224x224 RGB                                | 224x224 RGB                              | 224x224 RGB                               | 224x224 RGB                             |
+| **Number of Parameters** | ~60,000                            | ~60 million                                | ~138 million (VGG-16)                    | ~25.5 million (ResNet-50)                 | ~4.2 million (MobileNet-V1 α=1.0)       |
+| **Layers**               | 2 Conv, 2 Pooling, 2 FC            | 5 Conv, 3 Pooling, 3 FC                    | Deep Conv Stacks, 3 FC                   | Residual Blocks, Global Avg Pool, FC      | Depthwise Separable Conv, Global Avg Pool, FC |
+| **Activation Function**  | Tanh                               | ReLU                                       | ReLU                                     | ReLU                                      | ReLU6                                   |
+| **Pooling**              | Average Pooling                    | Max Pooling                                | Max Pooling                              | Max Pooling                               | Global Average Pooling                  |
+| **Regularization**       | None                               | Dropout                                    | Dropout                                  | Batch Normalization                       | Batch Normalization                     |
+| **Skip Connections**     | No                                 | No                                         | No                                       | Yes                                       | No                                      |
+| **Training**             | CPU                                | GPU                                        | GPU                                      | GPU                                       | Mobile-optimized                        |
+| **Dataset**              | MNIST (10 classes)                 | ImageNet (1000 classes)                    | ImageNet (1000 classes)                  | ImageNet (1000 classes)                   | ImageNet (1000 classes)                 |
+| **Top-5 Accuracy**       | ~99% (on MNIST)                    | ~83%                                       | ~90.0% (VGG-16)                          | ~93.3% (ResNet-50)                        | ~89.5%                                  |
+| **Model Size**           | ~0.25 MB                           | ~240 MB                                    | ~528 MB (VGG-16)                         | ~97 MB (ResNet-50)                        | ~16 MB                                  |
+| **Legacy**               | First practical CNN                | Sparked deep learning revolution           | Showed the value of deep networks        | Solved vanishing gradient problem         | Efficient for mobile and edge devices   |
+
+
+
+A brief introduction to CNN:
+* https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 
 ## Object Detection
 * https://github.com/GerardoMunoz/Vision/blob/main/GroundingDINO.ipynb
@@ -57,4 +65,159 @@ https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 | **YOLO-Tiny**          | Best for simple object detection         | Fast (real-time on mobile)       | Moderate                              | Optimized for smaller devices; good balance between speed and object detection accuracy.                   |
 | **PoseNet** (Optional) | Best for pose estimation and keypoints   | Moderate                         | Slow                                  | Useful for pose estimation; lightweight and well-suited for quick applications like tracking skeletons.    |
 
-* [MobileNet Detection](https://gerardomunoz.github.io/Vision/simple_MobileNet_ejem.html)
+## MobileNet: Summary of Innovations and Architecture
+
+* [MobileNet Detection Example Using WebCam](https://gerardomunoz.github.io/Vision/simple_MobileNet_ejem.html)
+
+### 1. **Key Innovations**
+MobileNet was designed for efficient deep learning on mobile and embedded devices, emphasizing low computational cost and memory usage.
+
+#### Innovations:
+- **Depthwise Separable Convolutions:**
+  - Breaks standard convolution into two steps:
+    1. **Depthwise Convolution:** Applies a single filter per input channel.
+    2. **Pointwise Convolution:** Uses a 1x1 kernel to combine features from the depthwise convolution.
+  - Reduces computational complexity significantly compared to standard convolutions.
+
+- **Width Multiplier (α):**
+  - Controls the number of channels in each layer.
+  - Allows trade-off between model size/speed and accuracy.
+
+- **Resolution Multiplier (ρ):**
+  - Scales input image resolution (e.g., 224x224 → smaller sizes).
+  - Reduces computational cost at the expense of accuracy.
+
+- **ReLU6 Activation:**
+  - A modified ReLU function that caps values at 6.
+  - Improves stability in low-precision environments like mobile devices.
+
+---
+
+### 2. **MobileNet Architecture**
+MobileNet consists of a series of depthwise separable convolutions, culminating in global average pooling and a fully connected layer for classification.
+
+#### Architecture (e.g., MobileNet-V1):
+1. **Input Layer:** 224x224 RGB image.
+2. **Convolutional Layers:**
+   - Initial standard convolution: 32 filters, 3x3 kernel, stride 2.
+   - Followed by 13 Depthwise Separable Convolution blocks.
+     - Each block consists of:
+       - **Depthwise Convolution:** Spatial filtering (3x3 kernel).
+       - **Pointwise Convolution:** Combines features (1x1 kernel).
+       - Followed by BatchNorm and ReLU6 activation.
+   - Feature maps reduce progressively through striding.
+3. **Global Average Pooling:**
+   - Reduces spatial dimensions to a single vector per channel.
+4. **Fully Connected Layer:**
+   - Outputs class probabilities (e.g., 1000 for ImageNet).
+
+#### Example of Layer Breakdown:
+| Layer Type                | Output Size | Details                                  |
+|---------------------------|-------------|------------------------------------------|
+| Input                     | 224x224x3   | RGB Image                               |
+| Convolution (Standard)    | 112x112x32  | 32 filters, 3x3 kernel, stride 2        |
+| Depthwise + Pointwise #1  | 112x112x64  | Depthwise (3x3), Pointwise (64 filters) |
+| Depthwise + Pointwise #2  | 56x56x128   | Depthwise (3x3), Pointwise (128 filters, stride 2) |
+| Depthwise + Pointwise #3  | 28x28x256   | Depthwise (3x3), Pointwise (256 filters, stride 2) |
+| Depthwise + Pointwise #4  | 14x14x512   | Repeated 5 times with no striding       |
+| Depthwise + Pointwise #5  | 7x7x1024    | Depthwise (3x3), Pointwise (1024 filters, stride 2) |
+| Global Average Pooling    | 1x1x1024    | Compresses spatial dimensions           |
+| Fully Connected (Output)  | 1000        | Softmax for classification              |
+
+---
+
+### 3. **Advantages of MobileNet**
+- **Low Computational Cost:** Depthwise separable convolutions drastically reduce FLOPs (floating point operations).
+- **Customizable:** Width and resolution multipliers allow scaling based on resource constraints.
+- **Efficient for Mobile Devices:** Optimized for low-power hardware with minimal accuracy trade-offs.
+
+---
+
+### Summary Table: MobileNet Innovations and Architecture
+| Feature                  | Description                                                                 |
+|--------------------------|-----------------------------------------------------------------------------|
+| **Depthwise Separable Conv** | Reduces computation by splitting spatial and channel filtering tasks.      |
+| **Width Multiplier (α)**      | Scales the number of channels, controlling model size and speed.          |
+| **Resolution Multiplier (ρ)** | Adjusts input image resolution, trading accuracy for efficiency.          |
+| **ReLU6 Activation**          | Enhances stability in mobile-friendly environments.                       |
+| **Architecture**              | Series of depthwise separable convolutions, global avg pooling, FC layer. |
+
+
+# Neural Network Architectures Overview
+
+## 1. **LeNet-5 (1998)**
+LeNet-5, developed by Yann LeCun, is one of the first Convolutional Neural Networks (CNNs) designed for digit recognition (e.g., MNIST dataset).
+
+### Architecture:
+- **Input Layer:** 32x32 grayscale image.
+- **Layer 1:** Convolutional Layer (6 filters, 5x5 kernel, stride 1) → Activation (Sigmoid) → Subsampling (Average Pooling 2x2, stride 2).
+- **Layer 2:** Convolutional Layer (16 filters, 5x5 kernel, stride 1) → Activation (Sigmoid) → Subsampling (Average Pooling 2x2, stride 2).
+- **Layer 3:** Fully Connected Layer (120 neurons) → Activation (Sigmoid).
+- **Layer 4:** Fully Connected Layer (84 neurons) → Activation (Sigmoid).
+- **Output Layer:** Fully Connected Layer (10 neurons, one per class).  
+
+---
+
+## 2. **AlexNet (2012)**
+Developed by Alex Krizhevsky, AlexNet revolutionized deep learning by leveraging GPUs for large-scale image classification on ImageNet.
+
+### Architecture:
+- **Input Layer:** 224x224 RGB image.
+- **Layer 1:** Convolutional Layer (96 filters, 11x11 kernel, stride 4) → ReLU → Max Pooling (3x3, stride 2).
+- **Layer 2:** Convolutional Layer (256 filters, 5x5 kernel, stride 1) → ReLU → Max Pooling (3x3, stride 2).
+- **Layer 3:** Convolutional Layer (384 filters, 3x3 kernel, stride 1) → ReLU.
+- **Layer 4:** Convolutional Layer (384 filters, 3x3 kernel, stride 1) → ReLU.
+- **Layer 5:** Convolutional Layer (256 filters, 3x3 kernel, stride 1) → ReLU → Max Pooling (3x3, stride 2).
+- **Fully Connected Layers:** 
+  - FC1: 4096 neurons → ReLU → Dropout.
+  - FC2: 4096 neurons → ReLU → Dropout.
+  - Output: 1000 neurons (Softmax).
+
+---
+
+## 3. **VGG (2014)**
+Proposed by the Visual Geometry Group (VGG) at Oxford, this network emphasizes simplicity by stacking small (3x3) convolutional filters.
+
+### Architecture (e.g., VGG-16):
+- **Input Layer:** 224x224 RGB image.
+- **Convolutional Blocks:** 
+  - Block 1: 2x[Conv (64 filters, 3x3, stride 1) → ReLU] → Max Pooling (2x2, stride 2).
+  - Block 2: 2x[Conv (128 filters, 3x3, stride 1) → ReLU] → Max Pooling (2x2, stride 2).
+  - Block 3: 3x[Conv (256 filters, 3x3, stride 1) → ReLU] → Max Pooling (2x2, stride 2).
+  - Block 4: 3x[Conv (512 filters, 3x3, stride 1) → ReLU] → Max Pooling (2x2, stride 2).
+  - Block 5: 3x[Conv (512 filters, 3x3, stride 1) → ReLU] → Max Pooling (2x2, stride 2).
+- **Fully Connected Layers:** 
+  - FC1: 4096 neurons → ReLU → Dropout.
+  - FC2: 4096 neurons → ReLU → Dropout.
+  - Output: 1000 neurons (Softmax).
+
+---
+
+## 4. **ResNet (2015)**
+ResNet, or Residual Network, introduced the concept of skip connections to address the vanishing gradient problem in deep networks.
+
+### Architecture (e.g., ResNet-50):
+- **Input Layer:** 224x224 RGB image.
+- **Initial Block:** Conv (64 filters, 7x7, stride 2) → BatchNorm → ReLU → Max Pooling (3x3, stride 2).
+- **Residual Blocks:** (Each block contains convolutional layers + skip connection)
+  - Block 1: 3x[1x1 Conv → 3x3 Conv → 1x1 Conv] with identity mapping (64 filters).
+  - Block 2: 4x[1x1 Conv → 3x3 Conv → 1x1 Conv] with identity mapping (128 filters).
+  - Block 3: 6x[1x1 Conv → 3x3 Conv → 1x1 Conv] with identity mapping (256 filters).
+  - Block 4: 3x[1x1 Conv → 3x3 Conv → 1x1 Conv] with identity mapping (512 filters).
+- **Fully Connected Layer:** 
+  - Global Average Pooling → FC (1000 neurons, Softmax).
+
+### Key Innovation:
+- **Skip Connections:** Bypasses certain layers, enabling gradients to flow directly through the network, mitigating the vanishing gradient problem.
+
+---
+
+## Summary Table
+
+| Architecture | Input Size | Key Features                             | Fully Connected Layers |
+|--------------|------------|------------------------------------------|-------------------------|
+| **LeNet-5**  | 32x32      | Small kernels, average pooling           | 2 FC layers            |
+| **AlexNet**  | 224x224    | Large kernels, ReLU, Dropout             | 2 FC layers (4096)     |
+| **VGG-16**   | 224x224    | Small 3x3 kernels, deep stack of layers  | 2 FC layers (4096)     |
+| **ResNet-50**| 224x224    | Skip connections, identity mapping       | Global Avg Pool + FC   |
+
