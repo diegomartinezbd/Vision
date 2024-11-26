@@ -48,8 +48,28 @@ A brief introduction to CNN:
 * https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 
 ## Object Detection
+
+| **Feature**                | **YOLO**                                    | **SSD**                                    | **Faster R-CNN**                          | **RetinaNet**                              |
+|----------------------------|---------------------------------------------|-------------------------------------------|-------------------------------------------|--------------------------------------------|
+| **Architecture**           | Single convolutional neural network (CNN)  | Single-stage detector with multi-scale predictions | Two-stage detector (RPN + classifier)     | Single-stage detector with Focal Loss     |
+| **Speed (FPS)**            | Very fast (real-time detection)             | Fast (but slower than YOLO)               | Slower (requires region proposals)        | Slower than YOLO/SSD, faster than Faster R-CNN |
+| **Accuracy**               | High, but less accurate than Faster R-CNN   | Moderate to High                          | Very high                                 | High, close to Faster R-CNN               |
+| **Output Bounding Boxes**  | Anchor boxes + grid cell prediction         | Anchor boxes                              | Region proposals + bounding boxes         | Anchor boxes                              |
+| **Training Complexity**    | Relatively simple                          | Moderate                                  | Complex                                   | Moderate to complex                       |
+| **Key Strengths**          | Speed and efficiency for real-time tasks   | Good balance of speed and accuracy        | High accuracy and robust for small objects | Handles class imbalance well with Focal Loss |
+| **Limitations**            | Struggles with small objects, dense scenes | Sensitive to scale and aspect ratio       | Computationally expensive                 | Computationally expensive                 |
+| **Best Use Cases**         | Real-time applications (e.g., drones, surveillance) | Mobile devices and applications with limited resources | Tasks requiring high accuracy (e.g., medical imaging) | Datasets with high class imbalance        |
+| **Anchor-based?**          | Yes                                         | Yes                                       | Yes                                       | Yes                                        |
+| **Key Innovations**        | Grid cell object prediction, end-to-end model | Multi-scale feature maps                  | Region Proposal Network (RPN)             | Focal Loss for class imbalance            |
+| **Versions**               | YOLOv1 to YOLOv8                           | SSD300, SSD512                            | Faster R-CNN                              | RetinaNet                                  |
+
+
+
 * https://github.com/GerardoMunoz/Vision/blob/main/GroundingDINO.ipynb
 * https://github.com/GerardoMunoz/Vision/blob/main/Zero_shot_object_detection_with_grounding_dino.ipynb
+
+
+
 
 ## Image Segmentation
 * https://github.com/GerardoMunoz/Vision/blob/main/Automatic_mask_generator_example.ipynb
