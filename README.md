@@ -23,7 +23,7 @@ Check out this video on building an object detection: [Object Detection Challeng
 
 ## Image Classification
 
-# Comparison of LeNet, AlexNet, VGG, ResNet, and MobileNet
+### Comparison of LeNet, AlexNet, VGG, ResNet, and MobileNet
 
 | Feature                  | **LeNet**                          | **AlexNet**                                | **VGG**                                  | **ResNet**                                | **MobileNet**                           |
 |--------------------------|-------------------------------------|--------------------------------------------|------------------------------------------|-------------------------------------------|-----------------------------------------|
