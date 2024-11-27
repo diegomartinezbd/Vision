@@ -47,6 +47,9 @@ Check out this video on building an object detection: [Object Detection Challeng
 A brief introduction to CNN:
 * https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
 
+Challenge: Investigate the 90% Accuracy Limit
+* https://gerardomunoz.github.io/Vision/mnist_90_.html
+
 ## Object Detection
 
 | **Feature**                | **YOLO**                                    | **SSD**                                    | **Faster R-CNN**                          | **RetinaNet**                              |
