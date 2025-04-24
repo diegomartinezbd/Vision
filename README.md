@@ -76,7 +76,7 @@ Challenge: Investigate the 90% Accuracy Limit
 
 ## Image Segmentation
 * https://github.com/GerardoMunoz/Vision/blob/main/Automatic_mask_generator_example.ipynb
-
+* https://github.com/GerardoMunoz/Vision/blob/main/segmentation_UNet.ipynb
 ## Image Generation
 * https://github.com/GerardoMunoz/Vision/blob/main/cvae.ipynb
 * https://github.com/GerardoMunoz/LinearCombinationGrade/blob/master/CalifCombLin_2020_4_09_wea001.ipynb
