@@ -1,7 +1,9 @@
 
 
 
-# 🧮 Image Manipulation & Display Libraries: Comparison Table (with PIL)
+# 🧮 Image Manipulation & Display Libraries: Comparison Table
+
+Example with OpenCV.js https://gerardomunoz.github.io/Vision/image_manipulation/Image_colors.html
 
 ## Overview Table
 
