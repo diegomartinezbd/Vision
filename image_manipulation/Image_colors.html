@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color Range Detector</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    canvas { border: 1px solid black; margin-top: 10px; }
+    input[type=number] { width: 60px; }
+  </style>
+</head>
+<body>
+<p>
+  <h2>Instructions:</h2><br>
+  1. Click the <em>"Choose File"</em> button to upload an image from your device.<br>
+  2. To detect regions by color, enter the desired <strong>Min</strong> and <strong>Max</strong> values for each RGB channel, then click <strong>"Detect Color Range"</strong>. Green boxes will appear around areas matching your selection.<br>
+  3. To analyze pixel values in a specific region:<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;- Click and drag on the image to draw a rectangle.<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;- When you release the mouse, the app will show the <strong>Min</strong>, <strong>Max</strong>, <strong>Average</strong>, and <strong>Median</strong> values for each color channel in both <strong>RGB</strong> and <strong>HSV</strong> formats.<br>
+  4. You can repeat this on different areas or upload a new image anytime.<br><br>
+  <strong>Tip:</strong> For more accurate selection, zoom in your browser (Ctrl + + / -).
+</p>
+
+<p>
+  <strong>Example Color Ranges:</strong><br><br>
+
+  <strong>To detect <span style="color:green">Green</span> areas:</strong><br>
+  R_min = 0, R_max = 70<br>
+  G_min = 80, G_max = 255<br>
+  B_min = 0, B_max = 70<br><br>
+
+  <strong>To detect <span style="color:red">Red</span> areas:</strong><br>
+  R_min = 100, R_max = 255<br>
+  G_min = 0, G_max = 40<br>
+  B_min = 0, B_max = 40<br><br>
+
+  <em>How to use:</em><br>
+  1. Enter these RGB ranges into the input fields for Min/Max R, G, B.<br>
+  2. Click <strong>"Detect Color Range"</strong> to highlight matching regions.<br>
+  3. Use your mouse to select any region on the image to get detailed statistics for that area (min, max, average, and median in both RGB and HSV).
+</p>
+
+
+<h2>Upload Image and Detect Color Range</h2>
+
+<input type="file" id="imageInput" accept="image/*"><br><br>
+
+<label>Min RGB:</label>
+R <input type="number" id="minR" value="0" min="0" max="255">
+G <input type="number" id="minG" value="0" min="0" max="255">
+B <input type="number" id="minB" value="0" min="0" max="255"><br>
+
+<label>Max RGB:</label>
+R <input type="number" id="maxR" value="255" min="0" max="255">
+G <input type="number" id="maxG" value="255" min="0" max="255">
+B <input type="number" id="maxB" value="255" min="0" max="255"><br><br>
+
+<button onclick="processImage()">Detect Color Range</button><br><br>
+<!-- Add this block to your HTML body -->
+<p><strong>Selected Area Color Stats:</strong></p>
+<pre id="statsOutput">Select an area to see color statistics...</pre>
+
+<canvas id="canvas"></canvas>
+<script async src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady();"></script>
+<script>
+
+
+let imgElement = document.createElement('img');
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext('2d');
+
+function onOpenCvReady() {
+  console.log('OpenCV.js is ready');
+}
+
+document.getElementById('imageInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    imgElement.onload = () => {
+      canvas.width = imgElement.width;
+      canvas.height = imgElement.height;
+      ctx.drawImage(imgElement, 0, 0);
+    }
+    imgElement.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function processImage() {
+  if (!imgElement.src) return;
+
+  const src_bgr = cv.imread(imgElement);
+  let src= new cv.Mat();
+  cv.cvtColor(src_bgr, src, cv.COLOR_BGR2RGB);
+  //const src = cv.cvtColor(src_BGR, cv.COLOR_BGR2RGB)
+  const dst = new cv.Mat();
+  const mask = new cv.Mat();
+
+  // Convert RGB to BGR (OpenCV uses BGR)
+  let minColor = new cv.Mat(src.rows, src.cols, src.type(), [
+    parseInt(document.getElementById('minB').value),
+    parseInt(document.getElementById('minG').value),
+    parseInt(document.getElementById('minR').value),
+    0
+  ]);
+  let maxColor = new cv.Mat(src.rows, src.cols, src.type(), [
+    parseInt(document.getElementById('maxB').value),
+    parseInt(document.getElementById('maxG').value),
+    parseInt(document.getElementById('maxR').value),
+    255
+  ]);
+
+  cv.inRange(src, minColor, maxColor, mask);
+  minColor.delete(); maxColor.delete();
+
+  // Find contours
+  const contours = new cv.MatVector();
+  const hierarchy = new cv.Mat();
+  cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+  // Draw rectangles on a new image
+  src_bgr.copyTo(dst);
+  for (let i = 0; i < contours.size(); i++) {
+    let rect = cv.boundingRect(contours.get(i));
+    let point1 = new cv.Point(rect.x, rect.y);
+    let point2 = new cv.Point(rect.x + rect.width, rect.y + rect.height);
+    cv.rectangle(dst, point1, point2, [0, 255, 0, 255], 2);
+  }
+
+  cv.imshow('canvas', dst);
+
+  // Clean up
+  src.delete(); dst.delete(); mask.delete(); contours.delete(); hierarchy.delete();
+}
+let selecting = false, startX = 0, startY = 0, endX = 0, endY = 0;
+
+// Mouse Events
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  startX = e.clientX - rect.left;
+  startY = e.clientY - rect.top;
+  selecting = true;
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (selecting) {
+    const rect = canvas.getBoundingClientRect();
+    endX = e.clientX - rect.left;
+    endY = e.clientY - rect.top;
+    ctx.drawImage(imgElement, 0, 0);
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  selecting = false;
+  computeStats();
+});
+
+function computeStats() {
+  const x = Math.min(startX, endX);
+  const y = Math.min(startY, endY);
+  const w = Math.abs(endX - startX);
+  const h = Math.abs(endY - startY);
+
+  if (w < 5 || h < 5) return;
+
+  let src = cv.imread(canvas);
+  let roi = src.roi(new cv.Rect(x, y, w, h));
+
+  // Split channels
+  let channels = new cv.MatVector();
+  cv.split(roi, channels);
+  const B = channels.get(0);
+  const G = channels.get(1);
+  const R = channels.get(2);
+
+  const statsRGB = getStats(R, G, B);
+
+  // Convert ROI to HSV
+  let hsv = new cv.Mat();
+  cv.cvtColor(roi, hsv, cv.COLOR_RGB2HSV);
+  let hsvChannels = new cv.MatVector();
+  cv.split(hsv, hsvChannels);
+  const H = hsvChannels.get(0);
+  const S = hsvChannels.get(1);
+  const V = hsvChannels.get(2);
+
+  const statsHSV = getStats(H, S, V);
+
+  // Output
+  const out = document.getElementById('statsOutput');
+  out.textContent =
+    `📊 RGB:\n` +
+    `R: ${formatStats(statsRGB.R)}\n` +
+    `G: ${formatStats(statsRGB.G)}\n` +
+    `B: ${formatStats(statsRGB.B)}\n\n` +
+    `🎨 HSV:\n` +
+    `H: ${formatStats(statsHSV.R)}\n` +
+    `S: ${formatStats(statsHSV.G)}\n` +
+    `V: ${formatStats(statsHSV.B)}\n`;
+
+  // Cleanup
+  src.delete(); roi.delete(); channels.delete(); hsv.delete(); hsvChannels.delete();
+  R.delete(); G.delete(); B.delete(); H.delete(); S.delete(); V.delete();
+}
+
+function getStats(R, G, B) {
+  return {
+    R: computeChannelStats(R),
+    G: computeChannelStats(G),
+    B: computeChannelStats(B)
+  };
+}
+
+function computeChannelStats(mat) {
+  const pixels = [];
+  for (let i = 0; i < mat.rows; i++) {
+    for (let j = 0; j < mat.cols; j++) {
+      pixels.push(mat.ucharPtr(i, j)[0]);
+    }
+  }
+  pixels.sort((a, b) => a - b);
+  const sum = pixels.reduce((a, b) => a + b, 0);
+  const avg = sum / pixels.length;
+  const median = pixels[Math.floor(pixels.length / 2)];
+  return {
+    min: pixels[0],
+    max: pixels[pixels.length - 1],
+    avg: avg.toFixed(1),
+    median: median
+  };
+}
+
+function formatStats(stat) {
+  return `min=${stat.min}, max=${stat.max}, avg=${stat.avg}, median=${stat.median}`;
+}
+</script>
+
+</body>
+</html>
