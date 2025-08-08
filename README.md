@@ -42,7 +42,7 @@ Check out this video on building an object detection: [Object Detection Challeng
 | **Model Size**           | ~0.25 MB                           | ~240 MB                                    | ~528 MB (VGG-16)                         | ~97 MB (ResNet-50)                        | ~16 MB                                  |
 | **Legacy**               | First practical CNN                | Sparked deep learning revolution           | Showed the value of deep networks        | Solved vanishing gradient problem         | Efficient for mobile and edge devices   |
 
-
+https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md
 
 A brief introduction to CNN:
 * https://www.kaggle.com/code/gerardomunoz/seminario-2019-x/notebook
