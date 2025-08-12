@@ -1,0 +1,19 @@
+## 📊 Evaluation Metrics Comparison
+
+| Problem Type | Metric | Definition | Advantages | Disadvantages |
+|--------------|--------|------------|------------|---------------|
+| **Binary Classification** | **Accuracy** | Proportion of correct predictions. | Easy to understand and calculate. | Misleading if classes are imbalanced. |
+|              | **Precision** | TP / (TP + FP). Of predicted positives, how many were correct. | Useful when the cost of false positives is high. | Ignores false negatives. |
+|              | **Recall (Sensitivity)** | TP / (TP + FN). Of actual positives, how many were detected. | Useful when the cost of false negatives is high. | Ignores false positives. |
+|              | **F1-score** | Harmonic mean of precision and recall. | Balances precision and recall, useful for imbalanced data. | Does not consider true negatives. |
+|              | **ROC-AUC** | Area under the ROC curve (TPR vs FPR). | Summarizes performance across all thresholds. | Less intuitive than F1; can be optimistic with imbalanced data. |
+|              | **PR-AUC** | Area under the Precision-Recall curve. | Better than ROC-AUC for highly imbalanced datasets. | Harder to interpret. |
+| **Multiclass Classification** | **Accuracy** | Overall proportion of correct predictions. | Simple and direct. | Can hide poor performance on minority classes. |
+|              | **Macro F1** | Average F1 of each class (unweighted). | Treats all classes equally. | Can penalize heavily if rare classes perform poorly. |
+|              | **Weighted F1** | Average F1 weighted by class frequency. | Adjusts for class imbalance. | Large classes dominate the score. |
+|              | **Cohen’s Kappa** | Agreement adjusted for chance. | Considers probability of random agreement. | Less intuitive than accuracy. |
+| **Regression** | **MAE (Mean Absolute Error)** | Mean of |y_pred - y_true|. | Easy to interpret (same units as target). | Penalizes all errors equally, does not emphasize large errors. |
+|              | **MSE (Mean Squared Error)** | Mean of (y_pred - y_true)². | Penalizes large errors more. | Less interpretable due to squared units. |
+|              | **RMSE (Root Mean Squared Error)** | Square root of MSE. | Interpretable in original units, sensitive to large errors. | Can be heavily influenced by outliers. |
+|              | **R² (Coefficient of Determination)** | Proportion of variance explained. | Easy to interpret as “% explained variance”. | Can be negative for poor models. |
+|              | **MAPE (Mean Absolute Percentage Error)** | Mean of |(y_pred - y_true)/y_true| × 100. | Useful for percentage interpretation. | Undefined if y_true = 0; biased toward small values. |
