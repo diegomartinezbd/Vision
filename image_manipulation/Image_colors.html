@@ -48,20 +48,21 @@
 <table border="1" cellpadding="5">
   <tr>
     <th></th>
-    <th>R</th>
-    <th>G</th>
-    <th>B</th>
+    <th>Min</th>
+    <th>Max</th>
   </tr>
   <tr>
-    <td>Min RGB</td>
+    <td>R</td>
     <td><input type="number" id="minR" value="0" min="0" max="255"></td>
-    <td><input type="number" id="minG" value="0" min="0" max="255"></td>
-    <td><input type="number" id="minB" value="0" min="0" max="255"></td>
+    <td><input type="number" id="maxR" value="255" min="0" max="255"></td>    
   </tr>
   <tr>
-    <td>Max RGB</td>
-    <td><input type="number" id="maxR" value="255" min="0" max="255"></td>
-    <td><input type="number" id="maxG" value="255" min="0" max="255"></td>
+    <td>G</td>
+    <td><input type="number" id="minG" value="0" min="0" max="255"></td>
+  </tr>
+  <tr>
+    <td>B</td>
+    <td><input type="number" id="minB" value="0" min="0" max="255"></td>
     <td><input type="number" id="maxB" value="255" min="0" max="255"></td>
   </tr>
 </table>
@@ -265,4 +266,5 @@ function formatStats(stat) {
 
 </body>
 </html>
+
 
