@@ -199,9 +199,9 @@ function computeStats() {
   // Split channels
   let channels = new cv.MatVector();
   cv.split(roi, channels);
-  const B = channels.get(0);
+  const R = channels.get(0);
   const G = channels.get(1);
-  const R = channels.get(2);
+  const B = channels.get(2);
 
   const statsRGB = getStats(R, G, B);
 
@@ -267,6 +267,7 @@ function formatStats(stat) {
 
 </body>
 </html>
+
 
 
 
