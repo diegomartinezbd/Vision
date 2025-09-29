@@ -45,7 +45,28 @@
 
 <input type="file" id="imageInput" accept="image/*"><br><br>
 
-<label>Min RGB:</label>
+<table border="1" cellpadding="5">
+  <tr>
+    <th></th>
+    <th>R</th>
+    <th>G</th>
+    <th>B</th>
+  </tr>
+  <tr>
+    <td>Min RGB</td>
+    <td><input type="number" id="minR" value="0" min="0" max="255"></td>
+    <td><input type="number" id="minG" value="0" min="0" max="255"></td>
+    <td><input type="number" id="minB" value="0" min="0" max="255"></td>
+  </tr>
+  <tr>
+    <td>Max RGB</td>
+    <td><input type="number" id="maxR" value="255" min="0" max="255"></td>
+    <td><input type="number" id="maxG" value="255" min="0" max="255"></td>
+    <td><input type="number" id="maxB" value="255" min="0" max="255"></td>
+  </tr>
+</table>
+  
+<!--label>Min RGB:</label>
 R <input type="number" id="minR" value="0" min="0" max="255">
 G <input type="number" id="minG" value="0" min="0" max="255">
 B <input type="number" id="minB" value="0" min="0" max="255"><br>
@@ -53,7 +74,7 @@ B <input type="number" id="minB" value="0" min="0" max="255"><br>
 <label>Max RGB:</label>
 R <input type="number" id="maxR" value="255" min="0" max="255">
 G <input type="number" id="maxG" value="255" min="0" max="255">
-B <input type="number" id="maxB" value="255" min="0" max="255"><br><br>
+B <input type="number" id="maxB" value="255" min="0" max="255"><br><br-->
 
 <button onclick="processImage()">Detect Color Range</button><br><br>
 <!-- Add this block to your HTML body -->
@@ -244,3 +265,4 @@ function formatStats(stat) {
 
 </body>
 </html>
+
