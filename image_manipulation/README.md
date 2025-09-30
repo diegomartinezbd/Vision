@@ -3,7 +3,9 @@
 
 # 🧮 Image Manipulation & Display Libraries: Comparison Table
 
-Example with OpenCV.js https://gerardomunoz.github.io/Vision/image_manipulation/Image_colors.html
+Example with OpenCV.js 
+* https://gerardomunoz.github.io/Vision/image_manipulation/Image_colors.html
+* https://gerardomunoz.github.io/Vision/image_manipulation/Lucas–Kanade.html
 
 ## Overview Table
 
