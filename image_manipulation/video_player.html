@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple Video Player</title>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Simple Video Player</h1>
+      <div class="small">Drop a file, choose from disk, or paste a remote URL</div>
+    </header>
+
+    <div class="file-row">
+      <input id="urlInput" type="text" placeholder="Paste remote video URL (https://...)" aria-label="Video URL">
+      <button id="loadUrlBtn" class="button">Load URL</button>
+      <!--label for="fileInput" class="button">Choose file…</label-->
+      <input id="fileInput" type="file" accept="video/*">
+    </div>
+
+    <div class="video-wrap">
+      <video id="player" controls preload="metadata" poster="" tabindex="0">
+        <!-- Default fallback source: replace or load one below -->
+        <!--source src="sample.mp4" type="video/mp4"-->
+        Your browser does not support the HTML5 Video element.
+      </video>
+    </div>
+
+    <div class="controls" style="margin-top:10px">
+      <div class="toolbar">
+        <button id="playBtn">Play</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="stopBtn">Stop</button>
+        <button id="rewBtn">« 10s</button>
+        <button id="ffBtn">10s »</button>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-left:auto">
+        <label class="small">Volume</label>
+        <input id="volume" class="range" type="range" min="0" max="1" step="0.01" value="1">
+        <label class="small">Speed</label>
+        <select id="playbackRate">
+          <option value="0.5">0.5x</option>
+          <option value="0.75">0.75x</option>
+          <option value="1" selected>1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+        <button id="fsBtn">⤢</button>
+      </div>
+    </div>
+
+    <footer>
+      <div class="small">Tip: when using a local file the player uses an object URL (no upload). To play a remote file make sure CORS allows cross-origin playback or host the file on the same origin.</div>
+    </footer>
+  </div>
+
+  <script>
+    const player = document.getElementById('player');
+    const fileInput = document.getElementById('fileInput');
+    const urlInput = document.getElementById('urlInput');
+    const loadUrlBtn = document.getElementById('loadUrlBtn');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const rewBtn = document.getElementById('rewBtn');
+    const ffBtn = document.getElementById('ffBtn');
+    const volume = document.getElementById('volume');
+    const playbackRate = document.getElementById('playbackRate');
+    const fsBtn = document.getElementById('fsBtn');
+
+    // Load file from disk
+    fileInput.addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      setSource(url);
+    });
+
+    // Load remote URL
+    loadUrlBtn.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if (!url) return alert('Paste a video URL first');
+      setSource(url);
+    });
+
+    function setSource(url){
+      // Revoke previous object URL if any
+      if (player.dataset.objectUrl) {
+        URL.revokeObjectURL(player.dataset.objectUrl);
+        delete player.dataset.objectUrl;
+      }
+      // If the url came from a File, remember to revoke later
+      if (url.startsWith('blob:')) player.dataset.objectUrl = url;
+
+      // remove all current sources and set new one
+      while (player.firstChild) player.removeChild(player.firstChild);
+      const src = document.createElement('source');
+      src.src = url;
+      // try to guess mime-type from extension (may be wrong)
+      const match = url.match(/\.([a-z0-9]+)(?:\?|$)/i);
+      if (match){
+        const ext = match[1].toLowerCase();
+        const map = {mp4:'video/mp4',webm:'video/webm',ogg:'video/ogg',mov:'video/quicktime'};
+        if (map[ext]) src.type = map[ext];
+      }
+      player.appendChild(src);
+      player.load();
+      player.play().catch(()=>{/* play might be blocked until user interaction */});
+    }
+
+    // Basic controls
+    playBtn.addEventListener('click', () => player.play());
+    pauseBtn.addEventListener('click', () => player.pause());
+    stopBtn.addEventListener('click', () => { player.pause(); player.currentTime = 0; });
+    rewBtn.addEventListener('click', () => { player.currentTime = Math.max(0, player.currentTime - 10); });
+    ffBtn.addEventListener('click', () => { player.currentTime = Math.min(player.duration || Infinity, player.currentTime + 10); });
+
+    volume.addEventListener('input', e => player.volume = parseFloat(e.target.value));
+    playbackRate.addEventListener('change', e => player.playbackRate = parseFloat(e.target.value));
+
+    fsBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else player.requestFullscreen?.();
+    });
+
+    // Drag & drop onto the video wrap
+    const wrap = document.querySelector('.video-wrap');
+    ['dragenter','dragover'].forEach(evt => wrap.addEventListener(evt, e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }));
+    wrap.addEventListener('drop', e => {
+      e.preventDefault();
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) {
+        const url = URL.createObjectURL(f);
+        setSource(url);
+      }
+    });
+
+    // Cleanup object URLs when page unloads
+    window.addEventListener('beforeunload', () => {
+      if (player.dataset.objectUrl) URL.revokeObjectURL(player.dataset.objectUrl);
+    });
+  </script>
+</body>
+</html>

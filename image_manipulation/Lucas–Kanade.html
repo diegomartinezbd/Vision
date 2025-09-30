@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Video Player + ROI + LK (center subimage)</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color-scheme:dark}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#071027;color:#e6edf3}
+    .card{width:100%;max-width:980px;background:linear-gradient(180deg,#071428 0%,#02101b 100%);border-radius:12px;padding:18px;box-shadow:0 8px 30px rgba(2,6,23,.6)}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+    h1{font-size:18px;margin:0}
+    .file-row{display:flex;gap:8px;margin-bottom:12px}
+    input[type=text]{min-width:0;flex:1;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:inherit}
+    label.button,button{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.06);padding:8px 10px;border-radius:8px;color:inherit}
+    .video-wrap{background:#000;border-radius:8px;overflow:hidden;position:relative}
+    video{width:100%;height:auto;display:block;background:#000}
+    .canv-row{display:flex;gap:12px;align-items:flex-start;margin-top:12px}
+    canvas{border:1px solid #334;border-radius:8px;background:#111}
+    .info{font-size:13px;color:#9fb0c8;margin-top:8px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    .small{font-size:12px;color:#7f98ad}
+    .param{display:flex;gap:6px;align-items:center}
+    label.small{font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Video Player — ROI & Lucas–Kanade (center subimage)</h1>
+      <div class="small">Captures ROI and next frame, computes LK flow for center cell of a 3×3 split.</div>
+    </header>
+
+    <div class="file-row">
+      <input id="urlInput" type="text" placeholder="Paste remote video URL (https://...)" aria-label="Video URL">
+      <button id="loadUrlBtn">Load URL</button>
+      <label for="fileInput" class="button">Choose file…</label>
+      <input id="fileInput" type="file" accept="video/*" style="display:none">
+    </div>
+
+    <div class="video-wrap">
+      <video id="player" controls preload="metadata" tabindex="0">
+        <!--source src="sample.mp4" type="video/mp4"-->
+      </video>
+    </div>
+
+    <div class="canv-row">
+      <div>
+        <div class="small">ROI (frame t)</div>
+        <canvas id="roiCanvas" width="150" height="150"></canvas>
+      </div>
+
+      <div>
+        <div class="small">ROI+1 (frame t+Δ) — LK overlay (center cell)</div>
+        <canvas id="roiNextCanvas" width="150" height="150"></canvas>
+      </div>
+
+      <div style="min-width:220px">
+        <div class="small">Parameters</div>
+        <div class="param"><label class="small">ROI X:</label><input id="roiX" type="number" value="50" style="width:80px"></div>
+        <div class="param"><label class="small">ROI Y:</label><input id="roiY" type="number" value="50" style="width:80px"></div>
+        <div class="param"><label class="small">ROI Size:</label><input id="roiSize" type="number" value="100" style="width:80px"></div>
+        <div class="param"><label class="small">Frame step (ms):</label><input id="frameStep" type="number" value="33" style="width:80px"></div>
+        <div class="param" style="margin-top:8px"><button id="capturePair">Capture pair & compute LK</button></div>
+        <div class="info" id="result"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="playBtn">Play</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="roiBtn">Quick Capture ROI</button>
+    </div>
+
+    <footer class="info">
+      Note: seeking to the next frame performs a temporary seek (the player will be returned to its original time/play state). If your video is served cross-origin, CORS may block pixel reads.
+    </footer>
+  </div>
+
+  <script>
+    // Elements
+    const player = document.getElementById('player');
+    const fileInput = document.getElementById('fileInput');
+    const urlInput = document.getElementById('urlInput');
+    const loadUrlBtn = document.getElementById('loadUrlBtn');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const roiBtn = document.getElementById('roiBtn');
+    const capturePairBtn = document.getElementById('capturePair');
+
+    const roiCanvas = document.getElementById('roiCanvas');
+    const roiNextCanvas = document.getElementById('roiNextCanvas');
+    const roiCtx = roiCanvas.getContext('2d');
+    const roiNextCtx = roiNextCanvas.getContext('2d');
+
+    const roiXInput = document.getElementById('roiX');
+    const roiYInput = document.getElementById('roiY');
+    const roiSizeInput = document.getElementById('roiSize');
+    const frameStepInput = document.getElementById('frameStep');
+    const resultDiv = document.getElementById('result');
+
+    // Load file
+    fileInput.addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (!f) return; const url = URL.createObjectURL(f); setSource(url); });
+    loadUrlBtn.addEventListener('click', () => { const url = urlInput.value.trim(); if (!url) return alert('Paste a video URL first'); setSource(url); });
+
+    function setSource(url){
+      if (player.dataset.objectUrl) { URL.revokeObjectURL(player.dataset.objectUrl); delete player.dataset.objectUrl; }
+      if (url.startsWith('blob:')) player.dataset.objectUrl = url;
+      while (player.firstChild) player.removeChild(player.firstChild);
+      const src = document.createElement('source'); src.src = url;
+      player.appendChild(src);
+      player.load();
+    }
+
+    playBtn.addEventListener('click', () => player.play());
+    pauseBtn.addEventListener('click', () => player.pause());
+    roiBtn.addEventListener('click', quickCapture);
+    capturePairBtn.addEventListener('click', capturePairAndCompute);
+
+    // util: wait for next seeked event
+    function seekTo(video, time){
+      return new Promise((resolve, reject) => {
+        const onSeek = () => { video.removeEventListener('seeked', onSeek); resolve(); };
+        video.addEventListener('seeked', onSeek);
+        video.currentTime = Math.min(Math.max(0, time), video.duration || time);
+        // if seeking won't fire (e.g. time same), resolve on next rAF
+        setTimeout(() => { /* fallback: resolve after short time */ resolve(); }, 250);
+      });
+    }
+
+    // draw current video frame to a canvas sized to intrinsic video pixels
+    function drawVideoToCanvas(dstCtx, sx, sy, sw, sh, dw, dh){
+      try{
+        // drawImage will use the current displayed frame
+        dstCtx.clearRect(0,0,dw,dh);
+        dstCtx.drawImage(player, sx, sy, sw, sh, 0, 0, dw, dh);
+        return true;
+      }catch(e){
+        console.error('drawImage failed — likely CORS or video not ready',e);
+        return false;
+      }
+    }
+
+    // Quick ROI capture (single frame)
+    function quickCapture(){
+      const roiX = Number(roiXInput.value);
+      const roiY = Number(roiYInput.value);
+      const roiSize = Number(roiSizeInput.value);
+      // scale: video intrinsic size -> we draw directly from video intrinsic coordinates
+      roiCtx.clearRect(0,0,roiCanvas.width,roiCanvas.height);
+      const ok = drawVideoToCanvas(roiCtx, roiX, roiY, roiSize, roiSize, roiCanvas.width, roiCanvas.height);
+      if(!ok) alert('Failed to capture — check CORS or that the video has loaded.');
+    }
+
+    // capture pair of frames: frame t and frame t+Δ (frameStep ms). We temporarily pause and seek.
+    async function capturePairAndCompute(){
+      if (player.readyState < 2) return alert('Video not ready. Load a video and wait until metadata/first frames are available.');
+
+      const origTime = player.currentTime;
+      const wasPlaying = !player.paused && !player.ended;
+      if (wasPlaying) player.pause();
+
+      const roiX = Number(roiXInput.value);
+      const roiY = Number(roiYInput.value);
+      const roiSize = Number(roiSizeInput.value);
+      const frameStepMs = Number(frameStepInput.value) || 33;
+      const frameStepSec = frameStepMs/1000;
+
+      // create temporary canvas at ROI size in video pixels
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = roiSize; tmpCanvas.height = roiSize;
+      const tmpCtx = tmpCanvas.getContext('2d');
+
+      // draw frame t (current)
+      try{
+        tmpCtx.clearRect(0,0,roiSize,roiSize);
+        tmpCtx.drawImage(player, roiX, roiY, roiSize, roiSize, 0, 0, roiSize, roiSize);
+      }catch(e){
+        alert('Failed to read pixels from video. If the video is cross-origin, the browser blocks access (CORS).');
+        if (wasPlaying) player.play();
+        return;
+      }
+      // save image data
+      const imgData1 = tmpCtx.getImageData(0,0,roiSize,roiSize);
+
+      // seek to next time
+      const t2 = Math.min(player.duration || (origTime + frameStepSec), origTime + frameStepSec);
+      await seekTo(player, t2);
+
+      tmpCtx.clearRect(0,0,roiSize,roiSize);
+      try{
+        tmpCtx.drawImage(player, roiX, roiY, roiSize, roiSize, 0, 0, roiSize, roiSize);
+      }catch(e){
+        alert('Failed reading next frame — CORS or video not ready.');
+        await seekTo(player, origTime);
+        if (wasPlaying) player.play();
+        return;
+      }
+      const imgData2 = tmpCtx.getImageData(0,0,roiSize,roiSize);
+
+      // restore time
+      await seekTo(player, origTime);
+      if (wasPlaying) player.play();
+
+      // draw scaled to small canvases for display
+      roiCtx.clearRect(0,0,roiCanvas.width,roiCanvas.height);
+      roiCtx.putImageData(imgData1, 0, 0);
+      // scale down to display size
+      const dispScale = roiCanvas.width / roiSize;
+      const tmpDisplay1 = document.createElement('canvas'); tmpDisplay1.width = roiCanvas.width; tmpDisplay1.height = roiCanvas.height;
+      tmpDisplay1.getContext('2d').drawImage(tmpCanvas, 0, 0, roiSize, roiSize, 0,0, tmpDisplay1.width, tmpDisplay1.height);
+      roiCtx.clearRect(0,0,roiCanvas.width,roiCanvas.height);
+      roiCtx.drawImage(tmpDisplay1,0,0);
+
+      // next
+      const tmpDisplay2 = document.createElement('canvas'); tmpDisplay2.width = roiNextCanvas.width; tmpDisplay2.height = roiNextCanvas.height;
+      tmpDisplay2.getContext('2d').drawImage(tmpCanvas, 0, 0, roiSize, roiSize, 0,0, tmpDisplay2.width, tmpDisplay2.height);
+      roiNextCtx.clearRect(0,0,roiNextCanvas.width,roiNextCanvas.height);
+      roiNextCtx.drawImage(tmpDisplay2,0,0);
+
+      // compute Lucas-Kanade optical flow for the center cell of 3x3 subdivision
+      const u = computeLKForCenter(imgData1, imgData2);
+
+      // draw arrow on roiNextCanvas (scaled coords)
+      const centerX = roiNextCanvas.width/2;
+      const centerY = roiNextCanvas.height/2;
+      roiNextCtx.strokeStyle = 'lime';
+      roiNextCtx.fillStyle = 'lime';
+      roiNextCtx.lineWidth = 2;
+      // flow u is in pixels relative to ROI original size; scale to display
+      const scale = roiNextCanvas.width / roiSize;
+      const dx = u[0]*scale;
+      const dy = u[1]*scale;
+      drawArrow(roiNextCtx, centerX, centerY, centerX + dx, centerY + dy);
+
+      resultDiv.textContent = `Flow (u,v) ≈ (${u[0].toFixed(2)}, ${u[1].toFixed(2)}) pixels (in ROI coordinates)`;
+    }
+
+    // compute Lucas-Kanade using a small window centered in the center cell of 3x3 grid
+    function computeLKForCenter(imgData1, imgData2){
+      const w = imgData1.width; const h = imgData1.height;
+      // convert to grayscale float arrays
+      function gray(data){
+        const g = new Float32Array(w*h);
+        for(let y=0;y<h;y++){
+          for(let x=0;x<w;x++){
+            const i = (y*w + x)*4;
+            // luminance
+            g[y*w+x] = 0.299*data.data[i] + 0.587*data.data[i+1] + 0.114*data.data[i+2];
+          }
+        }
+        return g;
+      }
+      const I1 = gray(imgData1);
+      const I2 = gray(imgData2);
+
+      // define center cell bounds (3x3)
+      const cellW = Math.floor(w/3);
+      const cellH = Math.floor(h/3);
+      const cx = Math.floor(w/2);
+      const cy = Math.floor(h/2);
+      // window size for LK (odd)
+      const win = Math.max(7, Math.floor(Math.min(cellW,cellH)/2)*2+1);
+      const half = Math.floor(win/2);
+
+      // compute gradients Ix, Iy and It within window
+      const Ix = new Float32Array(win*win);
+      const Iy = new Float32Array(win*win);
+      const It = new Float32Array(win*win);
+
+      // simple central differences for interior, forward/back for borders
+      let idx=0;
+      for(let yy = cy - half; yy <= cy + half; yy++){
+        for(let xx = cx - half; xx <= cx + half; xx++){
+          const x1 = Math.min(w-2, Math.max(1, xx));
+          const y1 = Math.min(h-2, Math.max(1, yy));
+          const iL = y1*w + (x1-1);
+          const iR = y1*w + (x1+1);
+          const iU = (y1-1)*w + x1;
+          const iD = (y1+1)*w + x1;
+          const ix = (I1[iR] - I1[iL]) * 0.5;
+          const iy = (I1[iD] - I1[iU]) * 0.5;
+          const it = I2[y1*w + x1] - I1[y1*w + x1];
+          Ix[idx] = ix; Iy[idx] = iy; It[idx] = it; idx++;
+        }
+      }
+
+      // build matrices for least squares: A = [Ix Iy], b = -It
+      let sumIx2=0, sumIy2=0, sumIxIy=0, sumIxt=0, sumIyt=0;
+      for(let i=0;i<Ix.length;i++){
+        const ix = Ix[i], iy = Iy[i], it = It[i];
+        sumIx2 += ix*ix;
+        sumIy2 += iy*iy;
+        sumIxIy += ix*iy;
+        sumIxt += ix*it;
+        sumIyt += iy*it;
+      }
+      // solve [sumIx2 sumIxIy; sumIxIy sumIy2] * [u; v] = -[sumIxt; sumIyt]
+      const det = (sumIx2*sumIy2 - sumIxIy*sumIxIy);
+      if (Math.abs(det) < 1e-6) return [0,0];
+      const u = (-sumIxt*sumIy2 - (-sumIyt)*sumIxIy) / det;
+      const v = (sumIx2*(-sumIyt) - sumIxIy*(-sumIxt)) / det;
+      return [u, v];
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2){
+      const head = 8;
+      const angle = Math.atan2(y2-y1, x2-x1);
+      ctx.beginPath();
+      ctx.moveTo(x1,y1);
+      ctx.lineTo(x2,y2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2,y2);
+      ctx.lineTo(x2 - head*Math.cos(angle - Math.PI/6), y2 - head*Math.sin(angle - Math.PI/6));
+      ctx.lineTo(x2 - head*Math.cos(angle + Math.PI/6), y2 - head*Math.sin(angle + Math.PI/6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+  </script>
+</body>
+</html>
